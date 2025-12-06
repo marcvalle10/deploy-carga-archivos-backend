@@ -12,19 +12,23 @@ export class Profesor {
   @PrimaryGeneratedColumn()
   id!: number;
 
-  @Column()
+  @Column({ type: "varchar" })
   nombre!: string;
 
-  @Column({ name: "apellido_paterno" })
+  @Column({ name: "apellido_paterno", type: "varchar" })
   apellidoPaterno!: string;
 
-  @Column({ name: "apellido_materno", nullable: true })
-  apellidoMaterno!: string | null;
+  @Column({
+    name: "apellido_materno",
+    type: "varchar",
+    nullable: true,
+  })
+  apellidoMaterno!: string | null; // ← importante: string | null
 
-  @Column()
+  @Column({ type: "varchar" })
   correo!: string;
 
-  @Column({ name: "num_empleado", unique: true })
+  @Column({ name: "num_empleado", type: "int", unique: true })
   numEmpleado!: number;
 
   @OneToOne(() => Usuario, (usuario) => usuario.profesor, { eager: true })
