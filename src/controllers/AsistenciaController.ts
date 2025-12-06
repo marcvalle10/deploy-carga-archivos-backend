@@ -208,6 +208,7 @@ export class AsistenciaController {
       const params: any[] = [];
       let sql = `
         SELECT
+          id,
           periodo,
           codigo_materia,
           nombre_materia,
