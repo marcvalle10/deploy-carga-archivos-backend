@@ -7,6 +7,7 @@ import estructuraRoutes from './routes/estructuraRoutes';
 import { planRouter } from './routes/planRoutes';
 import horariosRoutes from './routes/horariosRoutes';
 import asistenciaRoutes from './routes/asistenciaRoutes';
+import userRoutes from "./routes/userRoutes";
 
 const app = express();
 
@@ -19,5 +20,6 @@ app.use('/plan', planRouter);
 app.use('/horarios', horariosRoutes);
 app.use('/kardex', kardexRoutes);
 app.use('/asistencia', asistenciaRoutes);
+app.use("/admin", userRoutes);
 
 export default app;
