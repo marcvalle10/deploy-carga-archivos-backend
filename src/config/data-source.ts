@@ -9,6 +9,9 @@ import { PlanEstudio } from "../entities/PlanEstudio";
 import { Periodo } from "../entities/Periodo";
 import { Materia } from "../entities/Materia";
 import { Kardex } from "../entities/Kardex";
+import { Usuario } from "../entities/Usuario";
+import { Profesor } from "../entities/Profesor";
+import { Rol } from "../entities/Rol";
 
 const isTrue = (v?: string) => (v ?? "").toLowerCase() === "true";
 
@@ -32,5 +35,8 @@ export const AppDataSource = new DataSource({
     Periodo,
     Materia,
     Kardex,
+    Usuario,
+    Profesor,
+    Rol,
   ],
 });
