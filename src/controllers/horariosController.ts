@@ -273,7 +273,8 @@ export class HorariosController {
 
     const params: any[] = [];
       let sql = `
-        SELECT              
+        SELECT
+          id,
           periodo,
           codigo_materia,
           nombre_materia,
