@@ -202,50 +202,51 @@ export class AsistenciaController {
    */
 
   static async listarResumen(req: Request, res: Response) {
-    try {
-      const { periodo } = req.query;
+  try {
+    const { periodo } = req.query;
 
-      const params: any[] = [];
-      let sql = `
-        SELECT
-          id,
-          periodo,
-          codigo_materia,
-          nombre_materia,
-          grupo,
-          matricula,
-          expediente,
-          nombre_alumno,
-          apellido_paterno,
-          apellido_materno,
-          fecha_alta,
-          fuente,
-          archivo_id,
-          nombre_archivo,
-          fecha_archivo
-        FROM public.vista_asistencia_grupos
-      `;
+    const params: any[] = [];
+    let sql = `
+      SELECT
+        id,
+        periodo,
+        codigo_materia,
+        nombre_materia,
+        grupo,
+        matricula,
+        expediente,
+        nombre_alumno,
+        apellido_paterno,
+        apellido_materno,
+        fecha_alta,
+        fuente,
+        archivo_id,
+        nombre_archivo,
+        fecha_archivo
+      FROM public.vista_asistencia_grupos
+    `;
 
-      if (periodo) {
-        sql += ` WHERE periodo = $1`;
-        params.push(periodo);
-      }
-
-      sql += `
-        ORDER BY periodo, codigo_materia, grupo, matricula
-      `;
-
-      const rows = await AppDataSource.query(sql, params);
-
-      return res.json({ ok: true, items: rows });
-    } catch (err) {
-      console.error("Error en listarResumen de asistencia:", err);
-      return res.status(500).json({
-        ok: false,
-        error: "Error al obtener resumen de asistencia",
-      });
+    if (periodo) {
+      sql += ` WHERE periodo = $1`;
+      params.push(periodo);
     }
+
+    sql += `
+      ORDER BY periodo, codigo_materia, grupo, matricula
+    `;
+
+    const rows = await AppDataSource.query(sql, params);
+
+    return res.json({ ok: true, items: rows });
+  } catch (err) {
+    console.error("Error en listarResumen de asistencia:", err);
+    return res.status(500).json({
+      ok: false,
+      error: "Error al obtener resumen de asistencia",
+    });
   }
+}
+
 
       /**
      * POST /asistencia
