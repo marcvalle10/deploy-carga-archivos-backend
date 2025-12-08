@@ -1,32 +1,50 @@
+// src/utils/runPythonPlan.ts
 import { spawn } from "child_process";
 import path from "path";
 
+export interface PythonPlanResult {
+  ok: boolean;
+  plan?: {
+    nombre?: string;
+    version?: string;
+    total_creditos?: number;
+    semestres_sugeridos?: number;
+  } | null;
+  materias?: {
+    codigo: string;
+    nombre: string;
+    creditos: number;
+    tipo?: string | null;
+    semestre?: number | null;
+  }[];
+  warnings?: string[];
+  origen?: string;
+}
+
 /**
  * Ejecuta plan_estudio.py sobre el PDF indicado y devuelve
- * el JSON que escupe Python (lo tratamos como PlanPayload).
+ * el JSON que escupe Python (lo tratamos como PythonPlanResult).
  */
 export async function runPythonPlan(
   pdfPath: string,
   opts?: { debug?: boolean; ocr?: boolean }
-): Promise<any> {
+): Promise<PythonPlanResult> {
   return new Promise((resolve, reject) => {
-    // Binario de Python configurable; por defecto usamos "python"
-    const PYTHON_BIN = process.env.PYTHON_BIN || "python";
+    // ⚙️ Binario de Python configurable; por defecto usamos "python"
+    const pythonBin = process.env.PYTHON_BIN || "python";
 
-    // 👇 IMPORTANTE: apuntar a src/scripts/plan_estudio.py, no a dist
-    const scriptPath = path.resolve(
-      process.cwd(),
-      "src/scripts/plan_estudio.py"
-    );
+    // 👇 IMPORTANTE: apuntar siempre a src/scripts/plan_estudio.py
+    const scriptPath = path.join(process.cwd(), "src", "scripts", "plan_estudio.py");
 
-    const args = [scriptPath, pdfPath];
-
+    const args: string[] = [scriptPath, pdfPath];
     if (opts?.debug) args.push("--debug");
     if (opts?.ocr) args.push("--ocr");
 
-    console.log("[runPythonPlan] Ejecutando:", PYTHON_BIN, args);
+    console.log("[runPythonPlan] Ejecutando:", pythonBin, args);
 
-    const child = spawn(PYTHON_BIN, args);
+    const child = spawn(pythonBin, args, {
+      stdio: ["ignore", "pipe", "pipe"],
+    });
 
     let stdoutData = "";
     let stderrData = "";
@@ -63,7 +81,7 @@ export async function runPythonPlan(
       }
 
       try {
-        const parsed = JSON.parse(stdoutData);
+        const parsed = JSON.parse(stdoutData) as PythonPlanResult;
         resolve(parsed); // debe tener .ok, .plan, .materias, etc.
       } catch (err) {
         console.error(

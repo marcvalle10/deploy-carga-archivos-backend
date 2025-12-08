@@ -12,7 +12,7 @@ type PlanMateria = {
   semestre?: number | null;
 };
 
-type PlanPayload = {
+export type PlanPayload = {
   ok: boolean;
   plan: {
     nombre: string;
@@ -99,9 +99,8 @@ export async function ingestaPlan(payload: PlanPayload, archivoId: number) {
     const matRepo = trx.getRepository(Materia);
     const audRepo = trx.getRepository(AuditoriaCargas);
 
-    const planNombre =
-      payload.plan?.nombre ?? "Ingeniería en Sistemas de Información";
-    const planVersion = payload.plan?.version ?? "N/A";
+    const planNombre = payload.plan.nombre || "Ingeniería en Sistemas de Información";
+    const planVersion = payload.plan.version || "N/A";
     const totalCreditos =
       payload.plan?.total_creditos ??
       materiasInput.reduce((acc, m) => acc + (m.creditos || 0), 0);

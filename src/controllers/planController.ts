@@ -5,7 +5,7 @@ import { AppDataSource } from "../config/data-source";
 import { ArchivoCargado } from "../entities/ArchivoCargado";
 import { AuditoriaCargas } from "../entities/AuditoriaCargas";
 import { sha256File } from "../utils/fileHash";
-import { ingestaPlan } from "../services/ingestaPlan";
+import { ingestaPlan, PlanPayload } from "../services/ingestaPlan";
 
 export const planController = {
   uploadFile: async (req: Request, res: Response) => {
@@ -19,13 +19,11 @@ export const planController = {
       const repoArchivo = AppDataSource.getRepository(ArchivoCargado);
       const repoAud = AppDataSource.getRepository(AuditoriaCargas);
 
-      // Query params
       const force = String(req.query.force ?? "0") === "1";
       const debug = String(req.query.debug ?? "0") === "1";
       const ocr = String(req.query.ocr ?? "0") === "1";
       const usuario = (req.headers["x-usuario"] as string)?.trim() || "system";
 
-      // DEDUP por hash (evita UNIQUE violation ux_archivo_hash)
       const dup = await repoArchivo.findOne({ where: { hash } });
 
       if (dup && !force) {
@@ -46,7 +44,6 @@ export const planController = {
         });
       }
 
-      // Si no existe (o force=1), crea/usa un registro de archivo
       const nuevo = repoArchivo.create({
         tipo: "PLAN_ESTUDIO",
         nombre_archivo: req.file.originalname,
@@ -71,7 +68,7 @@ export const planController = {
         })
       );
 
-      // 1) Parsear con Python (con flags opcionales)
+      // 1) Parsear con Python
       const parsed = await runPythonPlan(fullPath, { debug, ocr });
 
       await repoAud.save(
@@ -92,13 +89,33 @@ export const planController = {
           .json({ ok: false, error: "No se pudo parsear el PDF del plan.", parsed });
       }
 
-      // 2) Ingesta idempotente (solo agrega/actualiza lo nuevo)
-      const ingesta = await ingestaPlan(parsed, archivoId);
+      // 2) Adaptar PythonPlanResult -> PlanPayload
+      const payload: PlanPayload = {
+        ok: parsed.ok,
+        plan: {
+          nombre:
+            parsed.plan?.nombre ||
+            "Ingeniería en Sistemas de Información",
+          version: parsed.plan?.version || "N/A",
+          total_creditos: parsed.plan?.total_creditos,
+          semestres_sugeridos: parsed.plan?.semestres_sugeridos,
+        },
+        materias: (parsed.materias ?? []).map((m) => ({
+          codigo: m.codigo,
+          nombre: m.nombre,
+          creditos: m.creditos,
+          tipo: m.tipo ?? undefined,
+          semestre: m.semestre ?? null,
+        })),
+        warnings: parsed.warnings ?? [],
+      };
+
+      const ingesta = await ingestaPlan(payload, archivoId);
 
       await repoAud.save(
         repoAud.create({
           archivo_id: archivoId,
-          etapa: "PARSE", // si quieres más limpio, aquí podrías usar 'INGESTA'
+          etapa: "PARSE", // si quieres, cámbialo a 'INGESTA'
           estado: parsed?.ok ? "OK" : "ERROR",
           detalle: `Plan: ${parsed?.plan?.nombre ?? "?"} v${
             parsed?.plan?.version ?? "?"
@@ -147,3 +164,4 @@ export const planController = {
     }
   },
 };
+  
