@@ -1,0 +1,6 @@
+pandas
+pdfminer.six
+PyPDF2
+numpy
+camelot-py
+tabula-py
