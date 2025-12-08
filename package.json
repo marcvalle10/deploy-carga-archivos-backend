@@ -7,7 +7,7 @@
         "start": "node dist/server.js",
         "build": "tsc",
         "procesar-estructura": "node scripts/procesar-estructura.js",
-        "postinstall": "python -m pip install -r plan_requirements.txt"
+        "postinstall": "$PYTHON_BIN -m pip install -r plan_requirements.txt"
     },
     "keywords": [],
     "author": "",
