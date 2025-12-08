@@ -72,11 +72,7 @@ export const planController = {
       );
 
       // 1) Parsear con Python (con flags opcionales)
-      const args: string[] = [];
-      if (debug) args.push("--debug");
-      if (ocr) args.push("--ocr");
-
-      const parsed = await runPythonPlan(fullPath, args);
+      const parsed = await runPythonPlan(fullPath, { debug, ocr });
 
       await repoAud.save(
         repoAud.create({
@@ -102,9 +98,13 @@ export const planController = {
       await repoAud.save(
         repoAud.create({
           archivo_id: archivoId,
-          etapa: "PARSE",
+          etapa: "PARSE", // si quieres más limpio, aquí podrías usar 'INGESTA'
           estado: parsed?.ok ? "OK" : "ERROR",
-          detalle: `Plan: ${parsed?.plan?.nombre ?? "?"} v${parsed?.plan?.version ?? "?"} | Materias: ${parsed?.materias?.length ?? 0} | Origen: ${parsed?.origen ?? "?"}`,
+          detalle: `Plan: ${parsed?.plan?.nombre ?? "?"} v${
+            parsed?.plan?.version ?? "?"
+          } | Materias: ${parsed?.materias?.length ?? 0} | Origen: ${
+            parsed?.origen ?? "?"
+          }`,
         })
       );
 
@@ -112,11 +112,12 @@ export const planController = {
 
       return res.json({
         ok: true,
-        action: dup && force
-          ? "REINGEST_FORCED"
-          : dup
-          ? "REUSED_EXISTING"
-          : "NEW_FILE_INGESTED",
+        action:
+          dup && force
+            ? "REINGEST_FORCED"
+            : dup
+            ? "REUSED_EXISTING"
+            : "NEW_FILE_INGESTED",
         archivoId,
         parsed,
         ingesta,
@@ -137,11 +138,7 @@ export const planController = {
       const debug = String(req.query.debug ?? "0") === "1";
       const ocr = String(req.query.ocr ?? "0") === "1";
 
-      const args: string[] = [];
-      if (debug) args.push("--debug");
-      if (ocr) args.push("--ocr");
-
-      const parsed = await runPythonPlan(fullPath, args);
+      const parsed = await runPythonPlan(fullPath, { debug, ocr });
       return res.json(parsed);
     } catch (e: any) {
       return res
