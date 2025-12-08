@@ -10,11 +10,14 @@ export async function runPythonPlan(
   opts?: { debug?: boolean; ocr?: boolean }
 ): Promise<any> {
   return new Promise((resolve, reject) => {
-    // 👇 binario de Python configurable; por defecto usamos "python"
+    // Binario de Python configurable; por defecto usamos "python"
     const PYTHON_BIN = process.env.PYTHON_BIN || "python";
 
-    // dist/controllers/... → dist/scripts/plan_estudio.py
-    const scriptPath = path.resolve(__dirname, "../scripts/plan_estudio.py");
+    // 👇 IMPORTANTE: apuntar a src/scripts/plan_estudio.py, no a dist
+    const scriptPath = path.resolve(
+      process.cwd(),
+      "src/scripts/plan_estudio.py"
+    );
 
     const args = [scriptPath, pdfPath];
 
@@ -40,7 +43,6 @@ export async function runPythonPlan(
       console.error("[runPythonPlan][stderr]", text.trim());
     });
 
-    // 🔴 error a nivel de proceso (no se encuentra el binario, permisos, etc.)
     child.on("error", (err) => {
       console.error("[runPythonPlan] Error al spawn de Python:", err);
       reject(err);
@@ -53,15 +55,16 @@ export async function runPythonPlan(
         );
         return reject(
           new Error(
-            `Python exited with code ${code}. Stderr: ${stderrData || "sin salida"}`
+            `Python exited with code ${code}. Stderr: ${
+              stderrData || "sin salida"
+            }`
           )
         );
       }
 
       try {
         const parsed = JSON.parse(stdoutData);
-        // parsed tendrá .ok, .plan, .materias, .warnings, etc.
-        resolve(parsed);
+        resolve(parsed); // debe tener .ok, .plan, .materias, etc.
       } catch (err) {
         console.error(
           "[runPythonPlan] Error parseando JSON de Python. stdout crudo:",
