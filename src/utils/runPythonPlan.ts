@@ -21,20 +21,20 @@ export interface PythonPlanResult {
   origen?: string;
 }
 
-/**
- * Ejecuta plan_estudio.py sobre el PDF indicado y devuelve
- * el JSON que escupe Python (lo tratamos como PythonPlanResult).
- */
 export async function runPythonPlan(
   pdfPath: string,
   opts?: { debug?: boolean; ocr?: boolean }
 ): Promise<PythonPlanResult> {
   return new Promise((resolve, reject) => {
-    // ⚙️ Binario de Python configurable; por defecto usamos "python"
+    // ⚙️ AHORA esto será /mise/installs/python/3.13.2/bin/python
     const pythonBin = process.env.PYTHON_BIN || "python";
 
-    // 👇 IMPORTANTE: apuntar siempre a src/scripts/plan_estudio.py
-    const scriptPath = path.join(process.cwd(), "src", "scripts", "plan_estudio.py");
+    const scriptPath = path.join(
+      process.cwd(),
+      "src",
+      "scripts",
+      "plan_estudio.py"
+    );
 
     const args: string[] = [scriptPath, pdfPath];
     if (opts?.debug) args.push("--debug");
@@ -82,7 +82,7 @@ export async function runPythonPlan(
 
       try {
         const parsed = JSON.parse(stdoutData) as PythonPlanResult;
-        resolve(parsed); // debe tener .ok, .plan, .materias, etc.
+        resolve(parsed);
       } catch (err) {
         console.error(
           "[runPythonPlan] Error parseando JSON de Python. stdout crudo:",
