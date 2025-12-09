@@ -26,9 +26,10 @@ export async function runPythonPlan(
   opts?: { debug?: boolean; ocr?: boolean }
 ): Promise<PythonPlanResult> {
   return new Promise((resolve, reject) => {
-    // 👇 Default *explícito* al python de mise en Railway
-    const pythonBin =
-      process.env.PYTHON_BIN || "/mise/installs/python/3.13.2/bin/python";
+    // ⚙️ Usamos la variable de entorno PYTHON_BIN (apuntará al venv)
+    const pythonBin = process.env.PYTHON_BIN || "python";
+
+    console.log("[runPythonPlan] PYTHON_BIN env =", pythonBin);
 
     const scriptPath = path.join(
       process.cwd(),
@@ -41,7 +42,6 @@ export async function runPythonPlan(
     if (opts?.debug) args.push("--debug");
     if (opts?.ocr) args.push("--ocr");
 
-    console.log("[runPythonPlan] PYTHON_BIN env =", process.env.PYTHON_BIN);
     console.log("[runPythonPlan] Ejecutando:", pythonBin, args);
 
     const child = spawn(pythonBin, args, {
